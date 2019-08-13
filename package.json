@@ -19,7 +19,8 @@
     "eject": "react-scripts eject",
     "electron": "electron .",
     "electron-dev": "ELECTRON_START_URL=http://localhost:3000 electron .",
-    "dev": "nf start"
+    "dev": "nf start",
+    "rebuild": "electron-rebuild"
   },
   "eslintConfig": {
     "extends": "react-app"

@@ -8,12 +8,16 @@ const {
   CATCH_ON_MAIN
 } = require("./utils/constants")
 
-
-
-
 function App() {
+  let [osdValue, setOsdValue] = React.useState(["","","","","","","","","","","","","","","",""])
+
   const handleMessage = (event, data) => {
-    console.log(data);
+    let osdValuePair = toString(data).split(",")
+    let lineIndex = osdValuePair[0].split(" ")[1]-1
+    let lineValue = osdValuePair[1]
+    let newState = osdValue
+    newState[lineIndex] = lineValue
+    setOsdValue(newState)
   }
 
   React.useState(() => {
@@ -21,26 +25,16 @@ function App() {
     return (false);
   }, [])
 
+  console.log(osdValue);
+  
 
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <button onClick={() => {
-          console.log("click ");
-          ipcRenderer.send(CATCH_ON_MAIN, "test string")
-        }}>SEND</button>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+          {osdValue.map((value, index)=> {
+            return (<div className="osd-line">{value}</div>)
+          })}
+          
       </header>
     </div>
   );

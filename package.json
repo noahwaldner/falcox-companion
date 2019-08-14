@@ -20,7 +20,7 @@
     "electron-dev": "ELECTRON_START_URL=http://localhost:3000 electron .",
     "dev": "nf start",
     "rebuild": "electron-rebuild",
-    "compile": "electron-builder"
+    "compile": "electron-builder build -mw"
   },
   "eslintConfig": {
     "extends": "react-app"

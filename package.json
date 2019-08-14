@@ -46,12 +46,12 @@
   },
   "author": {
     "name": "Noah Waldner",
-    "email": "your.email@domain.com",
-    "url": "https://your-website.com"
+    "email": "noah@waldner.dev",
+    "url": "https://waldner.dev"
   },
   "build": {
-    "appId": "com.my-website.my-app",
-    "productName": "MyApp",
+    "appId": "com.waldner.dev",
+    "productName": "Falco X Configurator",
     "copyright": "Copyright © 2019 ${author}",
     "mac": {
       "category": "public.app-category.utilities"
@@ -60,6 +60,10 @@
       "build/**/*",
       "node_modules/**/*"
     ],
-    "extends": null
+    "directories": {
+      "buildResources": "assets"
+    },
+    "extends": null,
+    "icon": "assets/icon.png"
   }
 }

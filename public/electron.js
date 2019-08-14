@@ -21,10 +21,12 @@ const CATCH_ON_MAIN = "catch_on_main"
 let mainWindow
 
 const initializeSerialDevice = () => {
+    mainWindow.send(CATCH_ON_RENDER, "init")
     SerialPort.list((err, ports) => {
+        mainWindow.send(CATCH_ON_RENDER, ports)
         ports.forEach(function (port) {
 
-            if (port.vendorId > 100) {
+            if (port.manufacturer == "FlightOne") {
                 DevicePort = port.comName.toString();
 
             }
@@ -54,7 +56,8 @@ function createWindow() {
         height: 600,
         webPreferences: {
             nodeIntegration: true
-        }
+        },
+        icon: __dirname + '../assets/icon.png'
     })
 
     // and load the index.html of the app.
@@ -66,7 +69,7 @@ function createWindow() {
     setTimeout(() => {
         initializeSerialDevice()
 
-    }, 2000);
+    }, 3000);
 
     // Emitted when the window is closed.
     mainWindow.on('closed', function () {
@@ -95,13 +98,20 @@ app.on('activate', function () {
     if (mainWindow === null) createWindow()
 })
 
-usb.on('attach', (device) => {
+usb.on('detach', (device) => {
+    mainWindow.send(CATCH_ON_RENDER, "ddd")
 
-    setTimeout(() => {
-        initializeSerialDevice()
-    }, 3000);
 
 });
+
+usb.on('attach', (device) => {
+    mainWindow.send(CATCH_ON_RENDER, "attatched")
+    setTimeout(() => {
+        initializeSerialDevice()
+    }, 5000);
+
+});
+
 
 
 

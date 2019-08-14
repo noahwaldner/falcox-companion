@@ -15,3 +15,8 @@
 .osd-line {
   font-size: 80*1/20vh
 }
+
+.alert {
+  width: 100%;
+  text-align: center;
+}

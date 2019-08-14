@@ -50,6 +50,7 @@
     "url": "https://waldner.dev"
   },
   "build": {
+    "buildDependenciesFromSource": true,
     "appId": "com.waldner.dev",
     "productName": "Falco X Configurator",
     "copyright": "Copyright © 2019 ${author}",

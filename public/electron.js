@@ -69,7 +69,7 @@ function createWindow() {
     setTimeout(() => {
         initializeSerialDevice()
 
-    }, 3000);
+    }, 1000);
 
     // Emitted when the window is closed.
     mainWindow.on('closed', function () {
@@ -105,10 +105,15 @@ usb.on('detach', (device) => {
 });
 
 usb.on('attach', (device) => {
-    mainWindow.send(CATCH_ON_RENDER, "attatched")
-    setTimeout(() => {
-        initializeSerialDevice()
-    }, 5000);
+    do {
+        if (mainWindow) {
+            mainWindow.send(CATCH_ON_RENDER, "attatched")
+            setTimeout(() => {
+                initializeSerialDevice()
+            }, 1000);
+        }
+    } while (!mainWindow);
+
 
 });
 

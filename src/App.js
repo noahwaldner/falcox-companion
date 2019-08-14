@@ -31,6 +31,8 @@ function App() {
       let lineValue = osdValuePair[1]
       let newState = osdValue
       newState[lineIndex] = lineValue
+      console.log(newState);
+
       setOsdValue(osdValue => { return Object.assign({}, { ...newState }) })
 
 
@@ -43,7 +45,14 @@ function App() {
     return (false);
   }, [])
 
-
+  let prompt;
+  if (connection == 0) {
+    prompt = "No Device connected"
+  } else if (connection == 1) {
+    prompt = "Connecting to FC, Please Wait!"
+  } else {
+    prompt = ""
+  }
 
 
 
@@ -51,10 +60,10 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-
-        {Object.values(osdValue).map((value, index) => {
+        <p>{prompt}</p>
+        {connection == 2 ? (Object.values(osdValue).map((value, index) => {
           return (<div className="osd-line">{value}</div>)
-        })}
+        })) : <div></div>}
 
       </header>
     </div>

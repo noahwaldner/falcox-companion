@@ -13,7 +13,8 @@
 }
 
 .osd-line {
-  font-size: 80*1/20vh
+  font-size: 80*1/20vh;
+  min-height: 5vh;
 }
 
 .alert {

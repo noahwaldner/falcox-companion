@@ -11,3 +11,7 @@
   color: white;
   padding: 10vh;
 }
+
+.osd-line {
+  font-size: 80*1/20vh
+}

@@ -4,22 +4,48 @@ const {
     BrowserWindow,
     ipcMain
 } = require('electron')
-const path = require('path')
-const startUrl = process.env.ELECTRON_START_URL || path.join(__dirname, '/../build/index.html');
+
+const startUrl = process.env.ELECTRON_START_URL || `file://${__dirname}/index.html`;
 const SerialPort = require('serialport');
 const Readline = require('@serialport/parser-readline')
 var usb = require('usb')
 let serialDevice;
 let DevicePort;
 
-const {
-    CATCH_ON_MAIN,
-    CATCH_ON_RENDER
-} = require("../src/utils/constants")
+const CATCH_ON_RENDER = "catch_on_render"
+
+const CATCH_ON_MAIN = "catch_on_main"
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
+
+const initializeSerialDevice = () => {
+    SerialPort.list((err, ports) => {
+        ports.forEach(function (port) {
+
+            if (port.vendorId > 100) {
+                DevicePort = port.comName.toString();
+
+            }
+        })
+
+        serialDevice = new SerialPort(DevicePort);
+        const parser = new Readline()
+        serialDevice.pipe(parser)
+        serialDevice.on("open", (err) => {
+            if (!err) {
+                parser.on('data', line => mainWindow.send(CATCH_ON_RENDER, line));
+            }
+
+
+        })
+
+
+
+    })
+}
+
 
 function createWindow() {
     // Create the browser window.
@@ -70,16 +96,14 @@ app.on('activate', function () {
 })
 
 usb.on('attach', (device) => {
-    mainWindow.send(CATCH_ON_RENDER, "new USB Device")
+
     setTimeout(() => {
         initializeSerialDevice()
-    }, 1000);
+    }, 3000);
 
 });
 
-usb.on('detach', (device) => {
-    mainWindow.send(CATCH_ON_RENDER, "USB device Removed")
-});
+
 
 ipcMain.on(CATCH_ON_MAIN, (event, arg) => {
     serialDevice.write("v")
@@ -87,27 +111,6 @@ ipcMain.on(CATCH_ON_MAIN, (event, arg) => {
 })
 
 
-const initializeSerialDevice = () => {
-    SerialPort.list((err, ports) => {
-        ports.forEach(function (port) {
-            mainWindow.send(CATCH_ON_RENDER, port)
-            if (port.vendorId > 100) {
-                DevicePort = port.comName.toString();
-
-            }
-        })
-        mainWindow.send(CATCH_ON_RENDER, "Device connected")
-        serialDevice = new SerialPort(DevicePort);
-        const parser = new Readline()
-        serialDevice.pipe(parser)
-        serialDevice.on("open", () => {
-            parser.on('data', line => mainWindow.send(CATCH_ON_RENDER, line));
-        })
-        mainWindow.send(CATCH_ON_RENDER, DevicePort)
-
-
-    })
-}
 
 
 

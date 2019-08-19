@@ -17,7 +17,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "electron": "electron .",
-    "electron-dev": "ELECTRON_START_URL=http://localhost:3000 electron .",
+    "electron-dev": "ELECTRON_START_URL=http://localhost:3000 electron ./public/electron.js",
     "dev": "nf start",
     "rebuild": "electron-rebuild",
     "compile": "electron-builder build -mw"

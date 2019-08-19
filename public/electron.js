@@ -7,7 +7,7 @@ const {
 
 const startUrl = process.env.ELECTRON_START_URL || `file://${__dirname}/index.html`;
 const SerialPort = require('serialport');
-const Readline = require('@serialport/parser-readline')
+const Delimiter = require('@serialport/parser-delimiter')
 var usb = require('usb')
 let serialDevice;
 let DevicePort;
@@ -33,11 +33,14 @@ const initializeSerialDevice = () => {
         })
 
         serialDevice = new SerialPort(DevicePort);
-        const parser = new Readline()
+        const parser = serialDevice.pipe(new Delimiter({ delimiter: '[?25l' }))
         serialDevice.pipe(parser)
         serialDevice.on("open", (err) => {
+            mainWindow.send(CATCH_ON_RENDER, "port opened")
             if (!err) {
-                parser.on('data', line => mainWindow.send(CATCH_ON_RENDER, line));
+                parser.on('data', line => mainWindow.send(CATCH_ON_RENDER, String.fromCharCode.apply(null, line)));
+            } else {
+                mainWindow.send(CATCH_ON_RENDER, err)
             }
 
 
@@ -64,7 +67,7 @@ function createWindow() {
     mainWindow.loadURL(startUrl)
 
     // Open the DevTools.
-    //mainWindow.webContents.openDevTools()
+    mainWindow.webContents.openDevTools()
 
     setTimeout(() => {
         initializeSerialDevice()

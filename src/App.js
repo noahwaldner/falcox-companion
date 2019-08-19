@@ -28,7 +28,7 @@ function App() {
         
         if (element.toString().includes('H')) {
           setConnection('data')
-          let content = element.split('H')[1]
+          let content = element.split('H')[1].split("  ")[0]
           let lineNum = element.split('H')[0].split(';')[0]
           console.log(lineNum, content);
           const cloneState = osdValue;

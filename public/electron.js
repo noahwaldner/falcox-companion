@@ -26,10 +26,10 @@ const initializeSerialDevice = () => {
         mainWindow.send(CATCH_ON_RENDER, ports)
         ports.forEach(function (port) {
 
-            if (port.manufacturer == "FlightOne") {
+  
                 DevicePort = port.comName.toString();
 
-            }
+            
         })
 
         serialDevice = new SerialPort(DevicePort);
@@ -103,6 +103,12 @@ app.on('activate', function () {
 
 usb.on('detach', (device) => {
     mainWindow.send(CATCH_ON_RENDER, "ddd")
+    SerialPort.list((err, ports) => {
+        mainWindow.send(CATCH_ON_RENDER, ports)
+
+
+
+    })
 
 
 });
@@ -124,7 +130,7 @@ usb.on('attach', (device) => {
 
 
 ipcMain.on(CATCH_ON_MAIN, (event, arg) => {
-    serialDevice.write("v")
+    serialDevice.write("d")
 
 })
 

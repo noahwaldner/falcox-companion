@@ -1,5 +1,6 @@
 {
   "name": "falcox-configurator",
+  "description": "Falco X Configurator",
   "version": "0.2.0",
   "private": true,
   "main": "build/electron.js",
@@ -20,7 +21,9 @@
     "electron-dev": "ELECTRON_START_URL=http://localhost:3000 electron ./public/electron.js",
     "dev": "nf start",
     "rebuild": "electron-rebuild",
-    "compile": "electron-builder build -mw"
+    "compile-win": "electron-builder build -w",
+    "compile-mac": "electron-builder build -m",
+    "postinstall": "electron-builder install-app-deps"
   },
   "eslintConfig": {
     "extends": "react-app"

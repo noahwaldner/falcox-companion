@@ -56,8 +56,9 @@
     "buildDependenciesFromSource": true,
     "appId": "com.waldner.dev",
     "productName": "Falco X Configurator",
-    "copyright": "Copyright © 2019 ${author}",
+    "copyright": "Built by ${author}",
     "mac": {
+      "identity": null,
       "category": "public.app-category.utilities"
     },
     "files": [

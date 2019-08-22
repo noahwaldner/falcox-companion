@@ -55,7 +55,7 @@
   "build": {
     "buildDependenciesFromSource": true,
     "appId": "com.waldner.dev",
-    "productName": "Falco X Configurator",
+    "productName": "Falco X Companion",
     "copyright": "Built by ${author}",
     "mac": {
       "identity": null,

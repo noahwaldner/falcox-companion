@@ -13,9 +13,6 @@ function App() {
     if (data.toString().includes("attatched")) {
       setConnection('Please wait, connecting to FC ...')
     }
-    if (data.toString().includes("success")) {
-      setConnection('Successful!')
-    }
     if (data.toString().includes("ddd")) {
       setConnection('No FC connected')
     }

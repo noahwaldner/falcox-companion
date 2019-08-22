@@ -43,8 +43,6 @@ const initializeSerialDevice = () => {
             mainWindow.send(CATCH_ON_RENDER, DevicePort)
             mainWindow.send(CATCH_ON_RENDER, "port opened")
             console.log("opened");
-
-
             if (!err) {
                 serialDevice.write("osdon\r\n")
                 parser.on('data', line => mainWindow.send(CATCH_ON_RENDER, String.fromCharCode.apply(null, line)));
@@ -56,9 +54,7 @@ const initializeSerialDevice = () => {
                     } else if (line.includes("Dump Complete")) {
                         saveBackup();
                     }
-
                 });
-
             } else {
                 mainWindow.send(CATCH_ON_RENDER, err)
             }
@@ -147,17 +143,21 @@ usb.on('attach', (device) => {
 });
 
 const saveBackup = () => {
-    savePath = dialog.showSaveDialog(null, {}, (path) => {
+    savePath = dialog.showSaveDialog(null, {}).then((path) => {
         try {
-            fs.writeFileSync(path, JSON.stringify(backupParams), 'utf-8');
-            mainWindow.send(CATCH_ON_RENDER, "success")
-            setTimeout(() => {
-                serialDevice.write("osdon\r\n")
-            }, 1000)
+            if (!path.canceled) {
+                fs.writeFileSync(path.filePath, JSON.stringify(backupParams), 'utf-8');
+                mainWindow.send(CATCH_ON_RENDER, "success")
+                let messagebox = dialog.showMessageBox(null, { message: "Settings saved successfully!" })
+            }
+
+            serialDevice.write("osdon\r\n")
+
 
         }
         catch {
-            return true
+            let messagebox = dialog.showMessageBox(null, { message: "Error occured while saving file!" })
+            serialDevice.write("osdon\r\n")
         };
     });
 };
@@ -169,16 +169,15 @@ const restoreBackup = () => {
             fs.readFile(filePaths[0], 'utf8', function (err, contents) {
                 JSON.parse(contents).forEach((element, key, arr) => {
                     serialDevice.write(element + "\r\n")
-                    if (Object.is(arr.length - 1, key)) {
-                        mainWindow.send(CATCH_ON_RENDER, "success")
-                        setTimeout(() => {
-                            serialDevice.write("osdon\r\n")
-                        }, 1000)
-                    }
-
                 });
+                let messagebox = dialog.showMessageBox(null, { message: "Settings restored successfully!" })
+                serialDevice.write("osdon\r\n")
+
             });
-        } catch { return true };
+        } catch {
+            let messagebox = dialog.showMessageBox(null, { message: "Error occured while loading file!" })
+            serialDevice.write("osdon\r\n")
+        };
     })
 };
 
@@ -191,14 +190,8 @@ ipcMain.on(CATCH_ON_MAIN, (event, arg) => {
         serialDevice.write("osdoff\r\n")
         restoreBackup()
     }
-
-
-
 })
 
-
-
-
-
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.
+process.on('uncaughtException', function (error) {
+    // Handle the error
+});

@@ -75,7 +75,8 @@ function createWindow() {
         webPreferences: {
             nodeIntegration: true
         },
-        icon: __dirname + '../assets/icon.png'
+        icon: __dirname + '../assets/icon.png',
+        resizable: false
     })
 
     // and load the index.html of the app.
@@ -143,19 +144,21 @@ usb.on('attach', (device) => {
 });
 
 const saveBackup = () => {
-    savePath = dialog.showSaveDialog(null, {}).then((path) => {
+    let openDialogOptions = {
+        defaultPath: "mySetting.falcox",
+        properties: ['createDirectory',]
+    }
+    savePath = dialog.showSaveDialog(null, openDialogOptions).then((path) => {
         try {
             if (!path.canceled) {
                 fs.writeFileSync(path.filePath, JSON.stringify(backupParams), 'utf-8');
                 mainWindow.send(CATCH_ON_RENDER, "success")
                 let messagebox = dialog.showMessageBox(null, { message: "Settings saved successfully!" })
             }
-
             serialDevice.write("osdon\r\n")
-
-
         }
         catch {
+            mainWindow.send(CATCH_ON_RENDER, "fail");
             let messagebox = dialog.showMessageBox(null, { message: "Error occured while saving file!" })
             serialDevice.write("osdon\r\n")
         };
@@ -163,18 +166,39 @@ const saveBackup = () => {
 };
 
 const restoreBackup = () => {
-    dialog.showOpenDialog(null, {}, (filePaths) => {
+    let restoreDialogOptions = {
+        filters: [
+            { name: 'Falco X Backups', extensions: ['falcox'] },
+            { name: 'All Files', extensions: ['*'] }
+        ],
+        properties: ['openFile']
+    }
+    dialog.showOpenDialog(null, restoreDialogOptions, (filePaths) => {
         mainWindow.send(CATCH_ON_RENDER, filePaths)
         try {
             fs.readFile(filePaths[0], 'utf8', function (err, contents) {
-                JSON.parse(contents).forEach((element, key, arr) => {
-                    serialDevice.write(element + "\r\n")
-                });
-                let messagebox = dialog.showMessageBox(null, { message: "Settings restored successfully!" })
-                serialDevice.write("osdon\r\n")
+                try {
+                    let restoreParams = JSON.parse(contents);
+                    restoreParams.forEach((element, key, arr) => {
+                        mainWindow.send(CATCH_ON_RENDER, element + " \r\n");
+                        serialDevice.write(element + " \r\n")
+                        if (key == arr.length - 1) {
+                            serialDevice.write("\r\n")
+                            serialDevice.write("osdon\r\n")
+                            mainWindow.send(CATCH_ON_RENDER, "success");
+                            let messagebox = dialog.showMessageBox(null, { message: "Settings restored successfully!" })
+                        }
+                    });
+
+
+                } catch (error) {
+                    throw "Invalid File"
+                }
+
 
             });
         } catch {
+            mainWindow.send(CATCH_ON_RENDER, "fail");
             let messagebox = dialog.showMessageBox(null, { message: "Error occured while loading file!" })
             serialDevice.write("osdon\r\n")
         };
@@ -189,6 +213,8 @@ ipcMain.on(CATCH_ON_MAIN, (event, arg) => {
     } else if (arg === "restore") {
         serialDevice.write("osdoff\r\n")
         restoreBackup()
+    } else if (arg === "dfu") {
+        serialDevice.write("dfu\r\n")
     }
 })
 

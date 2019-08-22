@@ -16,12 +16,20 @@ function App() {
     if (data.toString().includes("ddd")) {
       setConnection('No FC connected')
     }
+    if (data.toString().includes("success")) {
+      setConnection('Success!')
+    }
+    if (data.toString().includes("fail")) {
+      setConnection('Aborted!')
+    }
     if (data.toString().includes("[")) {
 
       let commands = data.toString().split('[')
       commands.forEach(element => {
         if (element.toString().includes('H')) {
-          setConnection('data')
+          if (!connection.includes("Saving")) {
+            setConnection('data')
+          }
           let content = element.split('H')[1].split("")[0]
           let lineNum = element.split('H')[0].split(';')[0]
           const cloneState = osdValue;
@@ -52,12 +60,15 @@ function App() {
         {connection == 'data' ? (Object.values(osdValue).map((value, index) => {
           return (<div className="osd-line">{value}</div>)
         })) : <div></div>}
+
         {
-          connection == 'data' ? <button onClick={() => { ipcRenderer.send('catch_on_main', "backup"); setConnection('Saving Settings... Please wait!') }}>Save Settings to File</button> : <div></div>
+          connection == 'data' ? <div className="actionButtons">
+            <button onClick={() => { ipcRenderer.send('catch_on_main', "backup"); setConnection('Saving Settings... Please wait!') }}>Save Settings to File</button>
+            <button onClick={() => { ipcRenderer.send('catch_on_main', "restore"); setConnection('Restoring... Please wait!') }}>Restore Settings from File</button>
+            <button onClick={() => { ipcRenderer.send('catch_on_main', "dfu"); setConnection('Entered DFU!') }}>Enter DFU Mode</button>
+          </div> : <div></div>
         }
-        {
-          connection == 'data' ? <button onClick={() => { ipcRenderer.send('catch_on_main', "restore"); setConnection('Restoring... Please wait!') }}>Restore Settings from File</button> : <div></div>
-        }
+
       </header>
     </div>
   );

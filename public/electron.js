@@ -8,9 +8,14 @@ const {
 const startUrl = process.env.ELECTRON_START_URL || `file://${__dirname}/index.html`;
 const SerialPort = require('serialport');
 const Delimiter = require('@serialport/parser-delimiter')
-var usb = require('usb')
+const Readline = require('@serialport/parser-readline')
+const fs = require('fs');
+const usb = require('usb')
+const { dialog } = require('electron')
 let serialDevice;
 let DevicePort;
+let savePath;
+let backupParams = [];
 
 const CATCH_ON_RENDER = "catch_on_render"
 
@@ -19,37 +24,51 @@ const CATCH_ON_MAIN = "catch_on_main"
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
+let parser
+let dumpParser
 
 const initializeSerialDevice = () => {
     mainWindow.send(CATCH_ON_RENDER, "init")
     SerialPort.list((err, ports) => {
         mainWindow.send(CATCH_ON_RENDER, ports)
         ports.forEach(function (port) {
-
-  
+            if (port.vendorId == '0483') {
                 DevicePort = port.comName.toString();
-
-            
+            }
         })
-
         serialDevice = new SerialPort(DevicePort);
-        const parser = serialDevice.pipe(new Delimiter({ delimiter: '[?25l' }))
-        serialDevice.pipe(parser)
+        parser = serialDevice.pipe(new Delimiter({ delimiter: '[?25l' }))
+        dumpParser = serialDevice.pipe(new Readline({ delimiter: '\r\n' }))
         serialDevice.on("open", (err) => {
+            mainWindow.send(CATCH_ON_RENDER, DevicePort)
             mainWindow.send(CATCH_ON_RENDER, "port opened")
+            console.log("opened");
+
+
             if (!err) {
+                serialDevice.write("osdon\r\n")
                 parser.on('data', line => mainWindow.send(CATCH_ON_RENDER, String.fromCharCode.apply(null, line)));
+                dumpParser.on('data', line => {
+
+                    if (line.includes("SET")) {
+                        backupParams.push(line)
+                        mainWindow.send(CATCH_ON_RENDER, line)
+                    } else if (line.includes("Dump Complete")) {
+                        saveBackup();
+                    }
+
+                });
+
             } else {
                 mainWindow.send(CATCH_ON_RENDER, err)
             }
-
-
         })
-
-
-
     })
+
+
 }
+
+
 
 
 function createWindow() {
@@ -72,14 +91,15 @@ function createWindow() {
     setTimeout(() => {
         initializeSerialDevice()
 
-    }, 1000);
+    }, 2000);
 
     // Emitted when the window is closed.
     mainWindow.on('closed', function () {
         // Dereference the window object, usually you would store windows
         // in an array if your app supports multi windows, this is the time
         // when you should delete the corresponding element.
-        mainWindow = null
+        mainWindow = null;
+        serialDevice.close()
     })
 }
 
@@ -126,11 +146,53 @@ usb.on('attach', (device) => {
 
 });
 
+const saveBackup = () => {
+    savePath = dialog.showSaveDialog(null, {}, (path) => {
+        try {
+            fs.writeFileSync(path, JSON.stringify(backupParams), 'utf-8');
+            mainWindow.send(CATCH_ON_RENDER, "success")
+            setTimeout(() => {
+                serialDevice.write("osdon\r\n")
+            }, 1000)
 
+        }
+        catch {
+            return true
+        };
+    });
+};
+
+const restoreBackup = () => {
+    dialog.showOpenDialog(null, {}, (filePaths) => {
+        mainWindow.send(CATCH_ON_RENDER, filePaths)
+        try {
+            fs.readFile(filePaths[0], 'utf8', function (err, contents) {
+                JSON.parse(contents).forEach((element, key, arr) => {
+                    serialDevice.write(element + "\r\n")
+                    if (Object.is(arr.length - 1, key)) {
+                        mainWindow.send(CATCH_ON_RENDER, "success")
+                        setTimeout(() => {
+                            serialDevice.write("osdon\r\n")
+                        }, 1000)
+                    }
+
+                });
+            });
+        } catch { return true };
+    })
+};
 
 
 ipcMain.on(CATCH_ON_MAIN, (event, arg) => {
-    serialDevice.write("d")
+    if (arg === "backup") {
+        serialDevice.write("osdoff\r\n")
+        serialDevice.write("dump\r\n")
+    } else if (arg === "restore") {
+        serialDevice.write("osdoff\r\n")
+        restoreBackup()
+    }
+
+
 
 })
 

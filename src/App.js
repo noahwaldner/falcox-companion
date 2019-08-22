@@ -10,33 +10,26 @@ function App() {
   let [connection, setConnection] = React.useState('No FC connected')
   const handleMessage = (event, data) => {
     console.log(data);
-    
     if (data.toString().includes("attatched")) {
-      console.log("attatched");
       setConnection('Please wait, connecting to FC ...')
     }
-
+    if (data.toString().includes("success")) {
+      setConnection('Successful!')
+    }
     if (data.toString().includes("ddd")) {
-      console.log("detached");
       setConnection('No FC connected')
     }
-
     if (data.toString().includes("[")) {
-      
+
       let commands = data.toString().split('[')
       commands.forEach(element => {
-        
         if (element.toString().includes('H')) {
           setConnection('data')
           let content = element.split('H')[1].split("")[0]
           let lineNum = element.split('H')[0].split(';')[0]
-          console.log(lineNum, content);
           const cloneState = osdValue;
           cloneState[lineNum] = content
-
           setOsdValue(osdValue => { return Object.assign({}, { ...cloneState }) })
-          console.log(osdValue);
-
         }
       });
     }
@@ -46,7 +39,6 @@ function App() {
     ipcRenderer.on("catch_on_render", handleMessage)
     return (false);
   }, [])
-
   let prompt;
   if (connection == 0) {
     prompt = "No Device connected"
@@ -55,8 +47,6 @@ function App() {
   } else {
     prompt = ""
   }
-
-
   return (
     <div className="App">
       <header className="App-header">
@@ -66,11 +56,11 @@ function App() {
           return (<div className="osd-line">{value}</div>)
         })) : <div></div>}
         {
-          connection == 'data' ? <button onClick={()=> {ipcRenderer.send('catch_on_main', "enterDFU"); setConnection('Successfully entered DFU mode')}}>Enter DFU Mode</button> : <div></div>
+          connection == 'data' ? <button onClick={() => { ipcRenderer.send('catch_on_main', "backup"); setConnection('Saving Settings... Please wait!') }}>Save Settings to File</button> : <div></div>
         }
-       
-
-
+        {
+          connection == 'data' ? <button onClick={() => { ipcRenderer.send('catch_on_main', "restore"); setConnection('Restoring... Please wait!') }}>Restore Settings from File</button> : <div></div>
+        }
       </header>
     </div>
   );

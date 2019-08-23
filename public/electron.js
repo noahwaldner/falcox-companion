@@ -12,17 +12,14 @@ const Readline = require('@serialport/parser-readline')
 const fs = require('fs');
 const usb = require('usb')
 const { dialog } = require('electron')
+
+const CATCH_ON_RENDER = "catch_on_render"
+const CATCH_ON_MAIN = "catch_on_main"
+
 let serialDevice;
 let DevicePort;
 let savePath;
 let backupParams = [];
-
-const CATCH_ON_RENDER = "catch_on_render"
-
-const CATCH_ON_MAIN = "catch_on_main"
-
-// Keep a global reference of the window object, if you don't, the window will
-// be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
 let parser
 let dumpParser
@@ -47,7 +44,6 @@ const initializeSerialDevice = () => {
                 serialDevice.write("osdon\r\n")
                 parser.on('data', line => mainWindow.send(CATCH_ON_RENDER, String.fromCharCode.apply(null, line)));
                 dumpParser.on('data', line => {
-
                     if (line.includes("SET")) {
                         backupParams.push(line)
                         mainWindow.send(CATCH_ON_RENDER, line)
@@ -60,12 +56,7 @@ const initializeSerialDevice = () => {
             }
         })
     })
-
-
 }
-
-
-
 
 function createWindow() {
     // Create the browser window.
@@ -133,8 +124,6 @@ usb.on('attach', (device) => {
             }, 1000);
         }
     } while (!mainWindow);
-
-
 });
 
 const saveBackup = () => {
@@ -183,13 +172,9 @@ const restoreBackup = () => {
                             let messagebox = dialog.showMessageBox(null, { message: "Settings restored successfully!" })
                         }
                     });
-
-
                 } catch (error) {
                     throw "Invalid File"
                 }
-
-
             });
         } catch {
             mainWindow.send(CATCH_ON_RENDER, "fail");
@@ -198,7 +183,6 @@ const restoreBackup = () => {
         };
     })
 };
-
 
 ipcMain.on(CATCH_ON_MAIN, (event, arg) => {
     if (arg === "backup") {

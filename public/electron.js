@@ -87,7 +87,6 @@ function createWindow() {
 
     setTimeout(() => {
         initializeSerialDevice()
-
     }, 2000);
 
     // Emitted when the window is closed.
@@ -122,12 +121,7 @@ usb.on('detach', (device) => {
     mainWindow.send(CATCH_ON_RENDER, "ddd")
     SerialPort.list((err, ports) => {
         mainWindow.send(CATCH_ON_RENDER, ports)
-
-
-
     })
-
-
 });
 
 usb.on('attach', (device) => {
@@ -145,7 +139,7 @@ usb.on('attach', (device) => {
 
 const saveBackup = () => {
     let openDialogOptions = {
-        defaultPath: "mySetting.falcox",
+        defaultPath: "mySetting.txt",
         properties: ['createDirectory',]
     }
     savePath = dialog.showSaveDialog(null, openDialogOptions).then((path) => {
@@ -168,7 +162,7 @@ const saveBackup = () => {
 const restoreBackup = () => {
     let restoreDialogOptions = {
         filters: [
-            { name: 'Falco X Backups', extensions: ['falcox'] },
+            { name: 'Falco X Backups', extensions: ['txt'] },
             { name: 'All Files', extensions: ['*'] }
         ],
         properties: ['openFile']

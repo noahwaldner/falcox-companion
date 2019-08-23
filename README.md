@@ -1,13 +1,25 @@
-How to use:
+Prerequisites:
 
-- clone repo
-- run "yarn"
-- run "yarn rebuild"
-- run "yarn dev"
+- node js >8.0 installed
+- yarn >1.16 installed
+- python >3.7 installed
+- open terminal at working directory
 
-Yarn dev executes "yarn start" first (starts react app on localhost) and starts electron with localhost as a target afterwards
+Preparation:
+ - run `yarn` to install dependencies
 
-How to build:
-- run "yarn compile"
+Development:
+ - run `yarn dev`to satrt webpack dev server and electron in dev mode
 
-Files will be in the "dist" folder
+Production:
+ Note: Because we're using native Modules you can only build for win on win and mac on mac
+
+ mac:
+ - Make sure Xcode is installed
+ - run `yarn build` to build React app
+ - run `yarn compile-mac`to build electron
+
+ win:
+ - run `npm --add-python-to-path='true' --debug install --global windows-build-tools`to install developer tools and set path for python 
+ - run `yarn build` to build React app
+ - run `yarn compile-mac`to build electron

@@ -165,10 +165,10 @@ const restoreBackup = () => {
                     console.log("restoring");
                     
                     restoreParams.forEach((element, key, arr) => {
-                        console.log(key);
+                   
                         
                             setTimeout(() => {
-                                console.log("iteration");
+                    
                                 mainWindow.send(CATCH_ON_RENDER, element + " \r\n");
                                 serialDevice.write(element + " \r\n")
                                 if (key == arr.length - 1) {

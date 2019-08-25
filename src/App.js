@@ -30,7 +30,7 @@ function App() {
           if (!connection.includes("Saving")) {
             setConnection('data')
           }
-          let content = element.split('H')[1]
+          let content = element.split('H')[1].replace('', '')
           let lineNum = element.split('H')[0].split(';')[0]
           const cloneState = osdValue;
           cloneState[lineNum] = content

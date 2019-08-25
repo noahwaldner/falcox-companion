@@ -74,7 +74,7 @@ function createWindow() {
     mainWindow.loadURL(startUrl)
 
     // Open the DevTools.
-    //mainWindow.webContents.openDevTools()
+    mainWindow.webContents.openDevTools()
 
     setTimeout(() => {
         initializeSerialDevice()
@@ -162,15 +162,29 @@ const restoreBackup = () => {
             fs.readFile(filePaths[0], 'utf8', function (err, contents) {
                 try {
                     let restoreParams = JSON.parse(contents);
+                    console.log("restoring");
+                    
                     restoreParams.forEach((element, key, arr) => {
-                        mainWindow.send(CATCH_ON_RENDER, element + " \r\n");
-                        serialDevice.write(element + " \r\n")
-                        if (key == arr.length - 1) {
-                            serialDevice.write("\r\n")
-                            serialDevice.write("osdon\r\n")
-                            mainWindow.send(CATCH_ON_RENDER, "success");
-                            let messagebox = dialog.showMessageBox(null, { message: "Settings restored successfully!" })
-                        }
+                        console.log(key);
+                        
+                            setTimeout(() => {
+                                console.log("iteration");
+                                mainWindow.send(CATCH_ON_RENDER, element + " \r\n");
+                                serialDevice.write(element + " \r\n")
+                                if (key == arr.length - 1) {
+                                    serialDevice.write("\r\n")
+                                    serialDevice.write("save\r\n")
+                                    setTimeout(() => {
+                                        serialDevice.write("osdon\r\n")
+                                        mainWindow.send(CATCH_ON_RENDER, "success");
+                                        let messagebox = dialog.showMessageBox(null, { message: "Settings restored successfully!" })
+                                    }, 4000);
+                                }
+                            }, key*20);
+                            
+                            
+                            
+                                  
                     });
                 } catch (error) {
                     throw "Invalid File"

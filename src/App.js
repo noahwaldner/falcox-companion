@@ -62,7 +62,7 @@ function App() {
         {connection == 'data' ? (Object.values(osdValue).map((value, index) => {
  
           
-          return (<div className="osd-line">{value.replace(/ /g, "\u00a0")}></div>)
+          return (<div className="osd-line">{value.replace(/ /g, "\u00a0")}</div>)
         })) : <div></div>}
 
         {

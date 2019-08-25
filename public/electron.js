@@ -74,7 +74,7 @@ function createWindow() {
     mainWindow.loadURL(startUrl)
 
     // Open the DevTools.
-    mainWindow.webContents.openDevTools()
+   // mainWindow.webContents.openDevTools()
 
     setTimeout(() => {
         initializeSerialDevice()

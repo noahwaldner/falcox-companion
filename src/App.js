@@ -30,10 +30,12 @@ function App() {
           if (!connection.includes("Saving")) {
             setConnection('data')
           }
-          let content = element.split('H')[1].replace('', '')
+          let content = element.split('H')[1].replace('', '')          
           let lineNum = element.split('H')[0].split(';')[0]
           const cloneState = osdValue;
           cloneState[lineNum] = content
+          console.log(cloneState);
+          
           setOsdValue(osdValue => { return Object.assign({}, { ...cloneState }) })
         }
       });
@@ -58,7 +60,9 @@ function App() {
 
         <p>{connection != 'data' ? connection : ""}</p>
         {connection == 'data' ? (Object.values(osdValue).map((value, index) => {
-          return (<div className="osd-line">{value}</div>)
+ 
+          
+          return (<div className="osd-line">{value.replace(/ /g, "\u00a0")}></div>)
         })) : <div></div>}
 
         {

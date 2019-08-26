@@ -41,7 +41,7 @@ const initializeSerialDevice = () => {
             mainWindow.send(CATCH_ON_RENDER, "port opened")
             console.log("opened");
             if (!err) {
-                serialDevice.write("osdon\r\n")
+                serialDevice.write("osdon 1\r\n")
                 parser.on('data', line => mainWindow.send(CATCH_ON_RENDER, String.fromCharCode.apply(null, line)));
                 dumpParser.on('data', line => {
                     if (line.includes("SET")) {
@@ -138,12 +138,12 @@ const saveBackup = () => {
                 mainWindow.send(CATCH_ON_RENDER, "success")
                 let messagebox = dialog.showMessageBox(null, { message: "Settings saved successfully!" })
             }
-            serialDevice.write("osdon\r\n")
+            serialDevice.write("osdon 1\r\n")
         }
         catch {
             mainWindow.send(CATCH_ON_RENDER, "fail");
             let messagebox = dialog.showMessageBox(null, { message: "Error occured while saving file!" })
-            serialDevice.write("osdon\r\n")
+            serialDevice.write("osdon 1\r\n")
         };
     });
 };
@@ -175,7 +175,7 @@ const restoreBackup = () => {
                                     serialDevice.write("\r\n")
                                     serialDevice.write("save\r\n")
                                     setTimeout(() => {
-                                        serialDevice.write("osdon\r\n")
+                                        serialDevice.write("osdon 1\r\n")
                                         mainWindow.send(CATCH_ON_RENDER, "success");
                                         let messagebox = dialog.showMessageBox(null, { message: "Settings restored successfully!" })
                                     }, 4000);
@@ -193,7 +193,7 @@ const restoreBackup = () => {
         } catch {
             mainWindow.send(CATCH_ON_RENDER, "fail");
             let messagebox = dialog.showMessageBox(null, { message: "Error occured while loading file!" })
-            serialDevice.write("osdon\r\n")
+            serialDevice.write("osdon 1\r\n")
         };
     })
 };

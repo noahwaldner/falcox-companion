@@ -29,9 +29,9 @@ const initializeSerialDevice = () => {
     SerialPort.list((err, ports) => {
         mainWindow.send(CATCH_ON_RENDER, ports)
         ports.forEach(function (port) {
-          
-                DevicePort = port.comName.toString();
-           
+
+            DevicePort = port.comName.toString();
+
         })
         serialDevice = new SerialPort(DevicePort);
         parser = serialDevice.pipe(new Delimiter({ delimiter: '[?25l' }))
@@ -74,7 +74,7 @@ function createWindow() {
     mainWindow.loadURL(startUrl)
 
     // Open the DevTools.
-    mainWindow.webContents.openDevTools()
+    // mainWindow.webContents.openDevTools()
 
     setTimeout(() => {
         initializeSerialDevice()
@@ -163,28 +163,28 @@ const restoreBackup = () => {
                 try {
                     let restoreParams = JSON.parse(contents);
                     console.log("restoring");
-                    
+
                     restoreParams.forEach((element, key, arr) => {
-                   
-                        
-                            setTimeout(() => {
-                    
-                                mainWindow.send(CATCH_ON_RENDER, element + " \r\n");
-                                serialDevice.write(element + " \r\n")
-                                if (key == arr.length - 1) {
-                                    serialDevice.write("\r\n")
-                                    serialDevice.write("save\r\n")
-                                    setTimeout(() => {
-                                        serialDevice.write("osdon 1\r\n")
-                                        mainWindow.send(CATCH_ON_RENDER, "success");
-                                        let messagebox = dialog.showMessageBox(null, { message: "Settings restored successfully!" })
-                                    }, 4000);
-                                }
-                            }, key*20);
-                            
-                            
-                            
-                                  
+
+
+                        setTimeout(() => {
+
+                            mainWindow.send(CATCH_ON_RENDER, element + " \r\n");
+                            serialDevice.write(element + " \r\n")
+                            if (key == arr.length - 1) {
+                                serialDevice.write("\r\n")
+                                serialDevice.write("save\r\n")
+                                setTimeout(() => {
+                                    serialDevice.write("osdon 1\r\n")
+                                    mainWindow.send(CATCH_ON_RENDER, "success");
+                                    let messagebox = dialog.showMessageBox(null, { message: "Settings restored successfully!" })
+                                }, 4000);
+                            }
+                        }, key * 20);
+
+
+
+
                     });
                 } catch (error) {
                     throw "Invalid File"

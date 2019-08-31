@@ -29,9 +29,9 @@ const initializeSerialDevice = () => {
     SerialPort.list((err, ports) => {
         mainWindow.send(CATCH_ON_RENDER, ports)
         ports.forEach(function (port) {
-            if (port.vendorId == '0483') {
+          
                 DevicePort = port.comName.toString();
-            }
+           
         })
         serialDevice = new SerialPort(DevicePort);
         parser = serialDevice.pipe(new Delimiter({ delimiter: '[?25l' }))
@@ -74,7 +74,7 @@ function createWindow() {
     mainWindow.loadURL(startUrl)
 
     // Open the DevTools.
-   // mainWindow.webContents.openDevTools()
+    mainWindow.webContents.openDevTools()
 
     setTimeout(() => {
         initializeSerialDevice()

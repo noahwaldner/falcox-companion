@@ -11,7 +11,7 @@ function App() {
   const handleMessage = (event, data) => {
     console.log(data);
     if (data.toString().includes("attatched")) {
-      setConnection('Connecting to FC, Please Wait! (You need Falco X 10.0.4.1515 or newer. Get it at flightone.com/aplha)')
+      setConnection('Connecting to FC, Please Wait! (You need Falco X 10.0.4.1515 or newer. Get it at flightone.com/alpha)')
     }
     if (data.toString().includes("ddd")) {
       setConnection('No FC connected')
@@ -50,7 +50,7 @@ function App() {
   if (connection == 0) {
     prompt = "No Device connected"
   } else if (connection == 1) {
-    prompt = "Connecting to FC, Please Wait! (You need Falco X 10.0.4.1515 or newer. Get it at flightone.com/aplha)"
+    prompt = "Connecting to FC, Please Wait! (You need Falco X 10.0.4.1515 or newer. Get it at flightone.com/alpha)"
   } else {
     prompt = ""
   }

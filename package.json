@@ -1,7 +1,7 @@
 {
   "name": "falcox-configurator",
   "description": "Falco X Companion",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "private": true,
   "main": "build/electron.js",
   "homepage": "./",
@@ -20,7 +20,7 @@
     "electron-dev": "ELECTRON_START_URL=http://localhost:3000 electron ./public/electron.js",
     "dev": "nf start",
     "rebuild": "electron-rebuild",
-    "compile-win": "electron-builder build -w",
+    "compile-win": "electron-builder build -w --x64 --ia32",
     "compile-mac": "electron-builder build -m",
     "postinstall": "electron-builder install-app-deps"
   },

@@ -56,9 +56,9 @@ function App() {
         {
           //buttons
           connectionState === 4 ? <div className="actionButtons">
-            <button onClick={() => { ipcRenderer.send('catch_on_main', "backup"); setConnectionState(5) }}>Save Settings to File</button>
-            <button onClick={() => { ipcRenderer.send('catch_on_main', "restore"); setConnectionState(6) }}>Restore Settings from File</button>
-            <button onClick={() => { ipcRenderer.send('catch_on_main', "dfu"); setConnectionState(7) }}>Enter DFU Mode</button>
+            <button className="actionButton" onClick={() => { ipcRenderer.send('catch_on_main', "backup"); setConnectionState(5) }}>Save Settings to File</button>
+            <button className="actionButton" onClick={() => { ipcRenderer.send('catch_on_main', "restore"); setConnectionState(6) }}>Restore Settings from File</button>
+            <button className="actionButton" onClick={() => { ipcRenderer.send('catch_on_main', "dfu"); setConnectionState(7) }}>Enter DFU Mode</button>
           </div> : <div></div>
         }
       </header>

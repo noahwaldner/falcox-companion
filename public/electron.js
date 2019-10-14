@@ -1,4 +1,5 @@
 // Modules to control application life and create native browser window
+const { saveBackup, restoreBackup } = require('./services/backup.js');
 const {
     app,
     BrowserWindow,
@@ -9,50 +10,52 @@ const startUrl = process.env.ELECTRON_START_URL || `file://${__dirname}/index.ht
 const SerialPort = require('serialport');
 const Delimiter = require('@serialport/parser-delimiter')
 const Readline = require('@serialport/parser-readline')
-const fs = require('fs');
-const usb = require('usb')
-const { dialog } = require('electron')
 
-const CATCH_ON_RENDER = "catch_on_render"
+
+const usb = require('usb')
+
+
+const CATCH_CONNECTION_STATE = "catchConnectionState"
+const CATCH_MESSAGE = "catchMessage"
+const CATCH_LOG = "catchLog"
 const CATCH_ON_MAIN = "catch_on_main"
 
 let serialDevice;
 let DevicePort;
 let savePath;
-let backupParams = [];
+let backupContent = [];
 let mainWindow
 let parser
 let dumpParser
 
 const initializeSerialDevice = () => {
-    mainWindow.send(CATCH_ON_RENDER, "init")
+    //initialize Window
+    mainWindow.send(CATCH_LOG, "init")
+    //list all serial devices
     SerialPort.list((err, ports) => {
-        mainWindow.send(CATCH_ON_RENDER, ports)
+        mainWindow.send(CATCH_LOG, ports)
         ports.forEach(function (port) {
-
             DevicePort = port.comName.toString();
-
         })
         serialDevice = new SerialPort(DevicePort);
         parser = serialDevice.pipe(new Delimiter({ delimiter: '[?25l' }))
         dumpParser = serialDevice.pipe(new Readline({ delimiter: '\r\n' }))
         serialDevice.on("open", (err) => {
-            mainWindow.send(CATCH_ON_RENDER, DevicePort)
-            mainWindow.send(CATCH_ON_RENDER, "port opened")
+            mainWindow.send(CATCH_LOG, DevicePort)
+            mainWindow.send(CATCH_LOG, "port opened")
             console.log("opened");
             if (!err) {
                 serialDevice.write("osdon 1\r\n")
-                parser.on('data', line => mainWindow.send(CATCH_ON_RENDER, String.fromCharCode.apply(null, line)));
+                parser.on('data', line => mainWindow.send(CATCH_MESSAGE, String.fromCharCode.apply(null, line)));
                 dumpParser.on('data', line => {
                     if (line.includes("SET")) {
-                        backupParams.push(line)
-                        mainWindow.send(CATCH_ON_RENDER, line)
+                        backupContent.push(line)
                     } else if (line.includes("Dump Complete")) {
-                        saveBackup();
+                        saveBackup(serialDevice, backupContent, ((status) => { mainWindow.send(CATCH_CONNECTION_STATE, status); }), ((message) => { mainWindow.send(CATCH_MESSAGE, message); }));
                     }
                 });
             } else {
-                mainWindow.send(CATCH_ON_RENDER, err)
+                mainWindow.send(CATCH_CONNECTION_STATE, 0)
             }
         })
     })
@@ -69,17 +72,13 @@ function createWindow() {
         icon: __dirname + '../assets/icon.png',
         resizable: false
     })
-
     // and load the index.html of the app.
     mainWindow.loadURL(startUrl)
-
     // Open the DevTools.
     // mainWindow.webContents.openDevTools()
-
     setTimeout(() => {
         initializeSerialDevice()
     }, 2000);
-
     // Emitted when the window is closed.
     mainWindow.on('closed', function () {
         // Dereference the window object, usually you would store windows
@@ -108,17 +107,18 @@ app.on('activate', function () {
     if (mainWindow === null) createWindow()
 })
 
+
 usb.on('detach', (device) => {
-    mainWindow.send(CATCH_ON_RENDER, "ddd")
+    mainWindow.send(CATCH_CONNECTION_STATE, 1)
     SerialPort.list((err, ports) => {
-        mainWindow.send(CATCH_ON_RENDER, ports)
+        mainWindow.send(1, ports)
     })
 });
 
 usb.on('attach', (device) => {
     do {
         if (mainWindow) {
-            mainWindow.send(CATCH_ON_RENDER, "attatched")
+            mainWindow.send(CATCH_CONNECTION_STATE, 2)
             setTimeout(() => {
                 initializeSerialDevice()
             }, 1000);
@@ -126,77 +126,7 @@ usb.on('attach', (device) => {
     } while (!mainWindow);
 });
 
-const saveBackup = () => {
-    let openDialogOptions = {
-        defaultPath: "mySetting.txt",
-        properties: ['createDirectory',]
-    }
-    savePath = dialog.showSaveDialog(null, openDialogOptions).then((path) => {
-        try {
-            if (!path.canceled) {
-                fs.writeFileSync(path.filePath, JSON.stringify(backupParams), 'utf-8');
-                mainWindow.send(CATCH_ON_RENDER, "success")
-                let messagebox = dialog.showMessageBox(null, { message: "Settings saved successfully!" })
-            }
-            serialDevice.write("osdon 1\r\n")
-        }
-        catch {
-            mainWindow.send(CATCH_ON_RENDER, "fail");
-            let messagebox = dialog.showMessageBox(null, { message: "Error occured while saving file!" })
-            serialDevice.write("osdon 1\r\n")
-        };
-    });
-};
 
-const restoreBackup = () => {
-    let restoreDialogOptions = {
-        filters: [
-            { name: 'Falco X Backups', extensions: ['txt'] },
-            { name: 'All Files', extensions: ['*'] }
-        ],
-        properties: ['openFile']
-    }
-    dialog.showOpenDialog(null, restoreDialogOptions, (filePaths) => {
-        mainWindow.send(CATCH_ON_RENDER, filePaths)
-        try {
-            fs.readFile(filePaths[0], 'utf8', function (err, contents) {
-                try {
-                    let restoreParams = JSON.parse(contents);
-                    console.log("restoring");
-
-                    restoreParams.forEach((element, key, arr) => {
-
-
-                        setTimeout(() => {
-
-                            mainWindow.send(CATCH_ON_RENDER, element + " \r\n");
-                            serialDevice.write(element + " \r\n")
-                            if (key == arr.length - 1) {
-                                serialDevice.write("\r\n")
-                                serialDevice.write("save\r\n")
-                                setTimeout(() => {
-                                    serialDevice.write("osdon 1\r\n")
-                                    mainWindow.send(CATCH_ON_RENDER, "success");
-                                    let messagebox = dialog.showMessageBox(null, { message: "Settings restored successfully!" })
-                                }, 4000);
-                            }
-                        }, key * 20);
-
-
-
-
-                    });
-                } catch (error) {
-                    throw "Invalid File"
-                }
-            });
-        } catch {
-            mainWindow.send(CATCH_ON_RENDER, "fail");
-            let messagebox = dialog.showMessageBox(null, { message: "Error occured while loading file!" })
-            serialDevice.write("osdon 1\r\n")
-        };
-    })
-};
 
 ipcMain.on(CATCH_ON_MAIN, (event, arg) => {
     if (arg === "backup") {

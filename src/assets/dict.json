@@ -1,0 +1,12 @@
+{
+    "statusMessage": {
+        "0": "Fail",
+        "1": "No FC recognized",
+        "2": "Connecting to FC (Needs at Least FalcoX 10.0.4.1515)",
+        "3": "Success",
+        "4": "If you see this, please try again or contact support (Noah Waldner)",
+        "5": "Saving Settings... Please wait!",
+        "6": "Restoring... Please wait!",
+        "7": "Entered DFU!"
+    }
+}

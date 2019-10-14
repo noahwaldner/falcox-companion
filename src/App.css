@@ -32,9 +32,9 @@
 button {
   margin: 1%;
   flex: 1;
-  height: 5vh;
+  height: 2.5em;
   background: white;
   border: 1px solid black;
-  border-radius: 10px;
+  border-radius: 4px;
   font-size: 0.7em;
 }

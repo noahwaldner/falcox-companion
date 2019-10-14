@@ -1,2 +1,2 @@
 react: npm start
-electron: node ./startup.js
+electron: npm run electron-dev

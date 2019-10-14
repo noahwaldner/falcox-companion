@@ -10,47 +10,48 @@ const startUrl = process.env.ELECTRON_START_URL || `file://${__dirname}/index.ht
 const SerialPort = require('serialport');
 const Delimiter = require('@serialport/parser-delimiter')
 const Readline = require('@serialport/parser-readline')
-
-
 const usb = require('usb')
-
-
 const CATCH_CONNECTION_STATE = "catchConnectionState"
 const CATCH_MESSAGE = "catchMessage"
 const CATCH_LOG = "catchLog"
 const CATCH_ON_MAIN = "catch_on_main"
-
 let serialDevice;
 let DevicePort;
-let savePath;
 let backupContent = [];
 let mainWindow
 let parser
 let dumpParser
 
 const initializeSerialDevice = () => {
-    //initialize Window
-    mainWindow.send(CATCH_LOG, "init")
     //list all serial devices
     SerialPort.list((err, ports) => {
+        //logging
         mainWindow.send(CATCH_LOG, ports)
         ports.forEach(function (port) {
             DevicePort = port.comName.toString();
         })
+        //open serial port
         serialDevice = new SerialPort(DevicePort);
+        //initialize parser for osd lines
         parser = serialDevice.pipe(new Delimiter({ delimiter: '[?25l' }))
+        //initalize parser for sumps
         dumpParser = serialDevice.pipe(new Readline({ delimiter: '\r\n' }))
+        //detect when serial port is opened
         serialDevice.on("open", (err) => {
             mainWindow.send(CATCH_LOG, DevicePort)
             mainWindow.send(CATCH_LOG, "port opened")
-            console.log("opened");
             if (!err) {
+                //activate osd readout
                 serialDevice.write("osdon 1\r\n")
+                //every time a new line is received, send it to the renderer
                 parser.on('data', line => mainWindow.send(CATCH_MESSAGE, String.fromCharCode.apply(null, line)));
+                //wehen a new line from a dump is received, save it to an array wich will be saved to the backup file
                 dumpParser.on('data', line => {
+                    //check if it is backup line
                     if (line.includes("SET")) {
                         backupContent.push(line)
                     } else if (line.includes("Dump Complete")) {
+                        //save backup to file
                         saveBackup(serialDevice, backupContent, ((status) => { mainWindow.send(CATCH_CONNECTION_STATE, status); }), ((message) => { mainWindow.send(CATCH_MESSAGE, message); }));
                     }
                 });
@@ -106,8 +107,7 @@ app.on('activate', function () {
     // dock icon is clicked and there are no other windows open.
     if (mainWindow === null) createWindow()
 })
-
-
+//detect when usb device is detached
 usb.on('detach', (device) => {
     mainWindow.send(CATCH_CONNECTION_STATE, 1)
     SerialPort.list((err, ports) => {
@@ -115,6 +115,7 @@ usb.on('detach', (device) => {
     })
 });
 
+//detect when usb device is attatched
 usb.on('attach', (device) => {
     do {
         if (mainWindow) {
@@ -126,14 +127,17 @@ usb.on('attach', (device) => {
     } while (!mainWindow);
 });
 
-
-
+//catch events coming from the renderer
 ipcMain.on(CATCH_ON_MAIN, (event, arg) => {
     if (arg === "backup") {
+        //deactiveate osd printout
         serialDevice.write("osdoff\r\n")
+        //dump all variables
         serialDevice.write("dump\r\n")
     } else if (arg === "restore") {
+        //deactiveate osd printout
         serialDevice.write("osdoff\r\n")
+        //restore backup
         restoreBackup()
     } else if (arg === "dfu") {
         serialDevice.write("dfu\r\n")
